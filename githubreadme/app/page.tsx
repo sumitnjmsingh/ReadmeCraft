@@ -1,11 +1,14 @@
 "use client";
 import { useState } from "react";
 import { Github, Loader2, FileDown } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState("");
   const [readme, setReadme] = useState("");
   const [loading, setLoading] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"raw" | "preview">("raw");
 
   const generateReadme = async () => {
     if (!repoUrl.trim()) return;
@@ -57,7 +60,7 @@ export default function Home() {
           <button
             onClick={generateReadme}
             disabled={loading}
-            className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
+            className="flex items-center justify-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-60 hover:cursor-pointer"
           >
             {loading ? (
               <>
@@ -78,14 +81,48 @@ export default function Home() {
               </h2>
               <button
                 onClick={downloadReadme}
-                className="flex items-center gap-2 px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 hover:cursor-pointer transition"
               >
                 <FileDown className="w-4 h-4" />
                 Download
               </button>
             </div>
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-[600px] whitespace-pre-wrap text-sm text-gray-800 font-mono shadow-inner">
-              <pre>{readme}</pre>
+              {/* <pre>{readme}</pre> */}
+              <div className="mb-4 flex gap-2">
+                <button
+                  onClick={() => setPreviewMode("raw")}
+                  className={`px-4 py-1 rounded-md text-sm font-medium border ${
+                    previewMode === "raw"
+                      ? "bg-indigo-600 text-white"
+                      : "bg-white text-gray-700 border-gray-300"
+                  }`}
+                >
+                  Raw Markdown
+                </button>
+                <button
+                  onClick={() => setPreviewMode("preview")}
+                  className={`px-4 py-1 rounded-md text-sm font-medium border ${
+                    previewMode === "preview"
+                      ? "bg-indigo-600 text-white"
+                      : "bg-white text-gray-700 border-gray-300"
+                  }`}
+                >
+                  Preview
+                </button>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 overflow-auto max-h-[600px] text-sm text-gray-800 font-mono shadow-inner whitespace-pre-wrap">
+                {previewMode === "raw" ? (
+                  <pre>{readme}</pre>
+                ) : (
+                  <div className="prose prose-sm sm:prose lg:prose-lg xl:prose-xl max-w-none text-left">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {readme}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
